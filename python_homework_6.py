@@ -67,8 +67,7 @@ def test_find_suitable_user():
         if user['age'] < 20:
             suitable_users.append(user)
             print(user)
-        else:
-            pass
+
     assert suitable_users == [
         {"name": "Stanislav", "age": 15},
         {"name": "Maria", "age": 18},
