@@ -1,5 +1,5 @@
-from homework92.pages.registration_page import RegistrationPage
-from homework92.models.user import User
+from homeworh92.pages.registration_page import RegistrationPage
+from homeworh92.models.user import User
 
 
 def test_fill_form():
@@ -8,7 +8,7 @@ def test_fill_form():
         last_name="Кропотова",
         email="sofia@example.com",
         gender="Female",
-        phone="79220798421",
+        phone="9220798421",
         day=12,
         month="June",
         year=1997,
@@ -21,6 +21,6 @@ def test_fill_form():
     )
 
     registration_page = RegistrationPage()
-    registration_page.open()
+    registration_page.open_form()
     registration_page.register(sofi)
     registration_page.should_have_registered(sofi)

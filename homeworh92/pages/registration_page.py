@@ -1,15 +1,16 @@
 import os
 from selene import browser, have, be
-from homework92.models.user import User
+from homeworh92.models.user import User
+from pathlib import Path
 
 class RegistrationPage:
 
     def open_form(self):
-        browser.open('/automation-practice-form')
+        browser.open('https://demoqa.com/automation-practice-form')
         return self
 
     def register(self, user: User):
-        file_path = os.path.abspath(os.path.join(os.path.dirname(file), '..', user.file_name))
+        file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'resources', user.file_name))
 
         browser.element('#firstName').type(user.first_name)
         browser.element('#lastName').type(user.last_name)
@@ -33,7 +34,7 @@ class RegistrationPage:
         browser.element('#submit').press_enter()
         return self
 
-    def check_result(self, user: User):
+    def should_have_registered(self, user: User):
         modal = browser.element('.modal-content')
         modal.should(have.text(f'{user.first_name} {user.last_name}'))
         modal.should(have.text(user.email))
