@@ -1,3 +1,6 @@
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 from homework_9.pages.registration_page import RegistrationPage
 
 def test_fill_form():

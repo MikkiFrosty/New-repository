@@ -1,3 +1,6 @@
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 from homeworh92.pages.registration_page import RegistrationPage
 from homeworh92.models.user import User
 
