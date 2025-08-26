@@ -3,7 +3,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import InvalidSessionIdException, WebDriverException
 from dotenv import load_dotenv
-import os as _os
+import os as os
 from selene.support.shared import browser
 from utils import attach
 
@@ -14,9 +14,9 @@ def load_env():
 @pytest.fixture(scope="function")
 def remote_browser_setup():
 
-    selenoid_login = _os.getenv("SELENOID_LOGIN")
-    selenoid_pass = _os.getenv("SELENOID_PASS")
-    selenoid_url = _os.getenv("SELENOID_URL")
+    selenoid_login = os.getenv("SELENOID_LOGIN", "user1")
+    selenoid_pass = os.getenv("SELENOID_PASS", "1234")
+    selenoid_url = os.getenv("SELENOID_URL", "selenoid.autotests.cloud")
 
     options = Options()
     options.set_capability("goog:loggingPrefs", {"browser": "ALL"})
