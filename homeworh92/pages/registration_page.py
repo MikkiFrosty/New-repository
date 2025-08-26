@@ -2,13 +2,15 @@ import os
 from selene import browser, have, be
 from homeworh92.models.user import User
 from pathlib import Path
+import allure
 
 class RegistrationPage:
-
+    @allure.step("Переходим по ссылке")
     def open_form(self):
         browser.open('https://demoqa.com/automation-practice-form')
         return self
 
+    @allure.step("Заполняем форму")
     def register(self, user: User):
         file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'resources', user.file_name))
 
@@ -33,7 +35,7 @@ class RegistrationPage:
 
         browser.element('#submit').press_enter()
         return self
-
+    @allure.step("Проверяем форму")
     def should_have_registered(self, user: User):
         modal = browser.element('.modal-content')
         modal.should(have.text(f'{user.first_name} {user.last_name}'))

@@ -1,3 +1,4 @@
 pytest
 allure-pytest
 selene>=2.0.b4
+PyPDF2
