@@ -32,7 +32,7 @@ def remote_browser_setup():
     options.capabilities.update(selenoid_capabilities)
 
     selenoid_url = selenoid_url.replace('http://', '').replace('https://', '').rstrip('/')
-    _os.environ['NO_PROXY'] = _os.environ.get('NO_PROXY', '') + ',selenoid.autotests.cloud'
+    os.environ['NO_PROXY'] = os.environ.get('NO_PROXY', '') + ',selenoid.autotests.cloud'
 
     executor = f"http://{selenoid_login}:{selenoid_pass}@{selenoid_url}/wd/hub"
     driver = webdriver.Remote(command_executor=executor, options=options)
