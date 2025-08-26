@@ -3,8 +3,8 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import InvalidSessionIdException, WebDriverException
 from dotenv import load_dotenv
-import os
-from selene import browser
+import os as _os
+from selene.support.shared import browser
 from utils import attach
 
 @pytest.fixture(scope="session", autouse=True)
@@ -14,9 +14,9 @@ def load_env():
 @pytest.fixture(scope="function")
 def remote_browser_setup():
 
-    selenoid_login = os.getenv("SELENOID_LOGIN")
-    selenoid_pass = os.getenv("SELENOID_PASS")
-    selenoid_url = os.getenv("SELENOID_URL")
+    selenoid_login = _os.getenv("SELENOID_LOGIN")
+    selenoid_pass = _os.getenv("SELENOID_PASS")
+    selenoid_url = _os.getenv("SELENOID_URL")
 
     options = Options()
     options.set_capability("goog:loggingPrefs", {"browser": "ALL"})
@@ -30,9 +30,17 @@ def remote_browser_setup():
         }
     }
     options.capabilities.update(selenoid_capabilities)
+
+    selenoid_url = selenoid_url.replace('http://', '').replace('https://', '').rstrip('/')
+    _os.environ['NO_PROXY'] = _os.environ.get('NO_PROXY', '') + ',selenoid.autotests.cloud'
+
+    executor = f"http://{selenoid_login}:{selenoid_pass}@{selenoid_url}/wd/hub"
+    driver = webdriver.Remote(command_executor=executor, options=options)
+
     driver = webdriver.Remote(
-        command_executor=f"https://{selenoid_login}:{selenoid_pass}@{selenoid_url}/wd/hub",
-        options=options)
+        command_executor=executor,
+        options=options
+    )
 
     browser.config.driver = driver
     yield browser
