@@ -40,12 +40,7 @@ class RegistrationPage:
             browser.element('#subjectsInput').should(be.visible).type(user.subject).press_enter()
 
         with allure.step("Выбор хобби"):
-            el = browser.element(by.text(user.hobby))
-            el.scroll_to(True)
-            try:
-                el.click()
-            except Exception:
-                browser.driver.execute_script("arguments[0].click();", el())
+            browser.element('label[for ="hobbies-checkbox-1"]').click()
 
         with allure.step("Загрузка изображения"):
             browser.element('#uploadPicture').send_keys(file_path)
