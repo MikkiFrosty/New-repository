@@ -1,49 +1,50 @@
-import pytest
-from selenium import webdriver
-from dotenv import load_dotenv
 import os
-from selenium.webdriver.chrome.options import Options
+import pytest
+from dotenv import load_dotenv
+
 from utils import attach
-from selene.support.shared import browser
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope='session', autouse=True)
 def load_env():
-    load_dotenv()
-    global selenoid_login, selenoid_pass, selenoid_url
-    selenoid_login = os.getenv("SELENOID_LOGIN")
-    selenoid_pass = os.getenv("SELENOID_PASS")
-    selenoid_url = os.getenv("SELENOID_URL")
-
-    print("SELENOID_LOGIN =", selenoid_login)
-    print("SELENOID_PASS =", selenoid_pass)
-    print("SELENOID_URL =", selenoid_url)
+    load_dotenv(override=True)
 
 @pytest.fixture(scope='function', autouse=True)
-def setup_browser():
+def remote_browser_setup():
+    from selenium import webdriver
+    from selenium.webdriver.chrome.options import Options
+    from selene.support.shared import browser
+
+    login = os.getenv('SELENOID_LOGIN')
+    password = os.getenv('SELENOID_PASS')
+    host = os.getenv('SELENOID_URL', '')
+
+    assert all([login, password, host]), (
+        f'ENV missing: login={bool(login)}, pass={bool(password)}, url={bool(host)}'
+    )
+
+    host = host.replace('http://', '').replace('https://', '').rstrip('/')
+
     options = Options()
-    caps = {
-        "browserName": "chrome",
-        #"browserVersion": "100.0",
-        "selenoid:options": {
-            "enableVNC": True,
-            "enableVideo": True
-        }
-    }
-    options.capabilities.update(caps)
+    options.set_capability('browserName', 'chrome')
+    options.set_capability('browserVersion', '128.0')
+    options.set_capability('selenoid:options', {'enableVNC': True, 'enableVideo': True})
+    options.set_capability('goog:loggingPrefs', {'browser': 'ALL'})
 
-    options.capabilities.update(caps)
     driver = webdriver.Remote(
-        command_executor=f"https://{selenoid_login}:{selenoid_pass}@{selenoid_url}/wd/hub",   #f"https://{selenoid_login}:{selenoid_pass}@{selenoid_url}/wd/hub" #"https://user1:1234@selenoid.autotests.cloud/wd/hub"
-        options=options)
-
-    browser.config.driver = driver  # Создаем объект Selene с WebDriver
+        command_executor=f'https://{login}:{password}@{host}/wd/hub',
+        options=options,
+    )
+    browser.config.driver = driver
 
     yield browser
 
     attach.add_screenshot(browser)
     attach.add_logs(browser)
     attach.add_html(browser)
-    attach.add_video(browser)
+    attach.add_video(browser)  # если у тебя функция ждёт browser
 
-    driver.quit()
+    try:
+        browser.quit()
+    except Exception:
+        pass
