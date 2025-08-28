@@ -1,5 +1,6 @@
 import os
 import pytest
+from utils import attach
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -34,3 +35,10 @@ def remote_browser_setup():
     browser.config.driver = driver
     yield
     browser.quit()
+
+    attach.add_screenshot(browser)
+    attach.add_logs(browser)
+    attach.add_html(browser)
+    attach.add_video(browser)
+
+    driver.quit()
