@@ -1,8 +1,6 @@
 pytest==8.4.1
-selene>=2.0.b4
-allure-pytest
-python-dotenv
-
-allure-python-commons~=2.15.0
+allure-pytest==2.15.0
+selene==2.0.0rc9
 selenium==4.11.2
-PyPDF2
+python-dotenv==1.1.1
+PyPDF2==3.0.1

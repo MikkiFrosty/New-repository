@@ -1,53 +1,57 @@
+import os
 import pytest
+from dotenv import load_dotenv
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import InvalidSessionIdException, WebDriverException
-
-from dotenv import load_dotenv
-import os
-from selene.support.shared import browser
+from selene import browser
 from utils import attach
 
-@pytest.fixture(scope="session", autouse=True)
-def load_env():
-    load_dotenv()
+load_dotenv()  # .env
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope='function', autouse=True)
 def remote_browser_setup():
-    from dotenv import load_dotenv
-    import os
-    load_dotenv()
+    """
+    Автоматически поднимает браузер перед каждым тестом
+    и прикладывает аттачи после.
+    """
 
-    login = os.getenv("SELENOID_LOGIN")
-    password = os.getenv("SELENOID_PASS")
-    host = os.getenv("SELENOID_URL")  # только домен
+    # базовые настройки Selene
+    browser.config.base_url = 'https://demoqa.com'
+    browser.config.window_width = 1200
+    browser.config.window_height = 900
+    browser.config.timeout = 4.0
 
-    assert all([login, password, host]), f"ENV missing: login={bool(login)}, pass={bool(password)}, url={bool(host)}"
+    # если переменные заданы — едем в Selenoid, иначе можно запустить локально (по желанию)
+    login = os.getenv('SELENOID_LOGIN')
+    password = os.getenv('SELENOID_PASS')
+    host = os.getenv('SELENOID_URL')  # только домен, без схемы и /wd/hub
 
-    # чистим host и на всякий случай выключаем прокси для selenoid
-    host = host.replace('http://', '').replace('https://', '').rstrip('/')
-    os.environ['NO_PROXY'] = os.environ.get('NO_PROXY', '') + ',selenoid.autotests.cloud'
+    if login and password and host:
+        host = host.replace('http://', '').replace('https://', '').rstrip('/')
+        os.environ['NO_PROXY'] = os.environ.get('NO_PROXY', '') + ',selenoid.autotests.cloud'
 
-    # настраиваем options ДО создания драйвера
-    options = Options()
-    options.set_capability("goog:loggingPrefs", {"browser": "ALL"})
-    selenoid_capabilities = {
-        "browserName": "chrome",
-        "browserVersion": "128.0",
-        "selenoid:options": {"enableVNC": True, "enableVideo": True},
-    }
-    options.capabilities.update(selenoid_capabilities)
+        options = Options()
+        options.set_capability('goog:loggingPrefs', {'browser': 'ALL'})
+        options.set_capability('browserName', 'chrome')
+        options.set_capability('browserVersion', '128.0')
+        options.set_capability('selenoid:options', {'enableVNC': True, 'enableVideo': True})
 
-    executor = f"https://{login}:{password}@{host}/wd/hub"
-    driver = webdriver.Remote(command_executor=executor, options=options)
+        executor = f'https://{login}:{password}@{host}/wd/hub'
+        browser.config.driver = webdriver.Remote(command_executor=executor, options=options)
+    else:
+        # если хочешь падать без переменных — раскомментируй строку ниже
+        # raise AssertionError('No Selenoid creds/host in .env')
+        pass
 
-    browser.config.driver = driver
-    yield browser
+    yield
 
+    # --- аттачи
     attach.add_logs(browser)
     attach.add_html(browser)
     attach.add_screenshot(browser)
-    attach.add_video(browser)
+    attach.add_video(browser)  # для Selenoid
+
     try:
         browser.quit()
     except (InvalidSessionIdException, WebDriverException):
