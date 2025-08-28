@@ -1,6 +1,7 @@
 import os
 import pytest
 from dotenv import load_dotenv
+load_dotenv()
 
 @pytest.fixture(scope='session', autouse=True)
 def load_env():
@@ -30,9 +31,6 @@ def remote_browser_setup():
         command_executor=f'https://{login}:{password}@{host}/wd/hub',
         options=options
     )
-    print("DEBUG login:", os.getenv("SELENOID_LOGIN"))
-    print("DEBUG pass:", os.getenv("SELENOID_PASS"))
-    print("DEBUG url:", os.getenv("SELENOID_URL"))
     browser.config.driver = driver
     yield
     browser.quit()
