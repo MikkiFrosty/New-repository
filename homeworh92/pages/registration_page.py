@@ -1,6 +1,5 @@
 import os
 
-import self
 from selene import browser, have, be
 from homeworh92.models.user import User
 from pathlib import Path
