@@ -1,9 +1,13 @@
 import os
 import pytest
+import allure
 from dotenv import load_dotenv
 
-from utils import attach
+from selene.support.shared import browser
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 
+from utils import attach
 
 @pytest.fixture(scope='session', autouse=True)
 def load_env():
@@ -11,17 +15,10 @@ def load_env():
 
 @pytest.fixture(scope='function', autouse=True)
 def remote_browser_setup():
-    from selenium import webdriver
-    from selenium.webdriver.chrome.options import Options
-    from selene.support.shared import browser
-
     login = os.getenv('SELENOID_LOGIN')
     password = os.getenv('SELENOID_PASS')
     host = os.getenv('SELENOID_URL', '')
-
-    assert all([login, password, host]), (
-        f'ENV missing: login={bool(login)}, pass={bool(password)}, url={bool(host)}'
-    )
+    assert all([login, password, host]), 'ENV missing'
 
     host = host.replace('http://', '').replace('https://', '').rstrip('/')
 
@@ -33,18 +30,16 @@ def remote_browser_setup():
 
     driver = webdriver.Remote(
         command_executor=f'https://{login}:{password}@{host}/wd/hub',
-        options=options,
+        options=options
     )
     browser.config.driver = driver
 
-    yield browser
-
-    attach.add_screenshot(browser)
-    attach.add_logs(browser)
-    attach.add_html(browser)
-    attach.add_video(browser)  # если у тебя функция ждёт browser
-
     try:
+        yield browser
+    finally:
+        with allure.step('Tear down'):
+            attach.add_screenshot(browser)
+            attach.add_logs(browser)
+            attach.add_html(browser)
+            attach.add_video(browser)
         browser.quit()
-    except Exception:
-        pass
