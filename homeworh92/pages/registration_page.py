@@ -41,7 +41,7 @@ class RegistrationPage:
 
         with allure.step("Выбор хобби"):
             el = browser.element(by.text(user.hobby))
-            el.scroll_into_view(True)
+            el.scroll_to(True)
             try:
                 el.click()
             except Exception:
